@@ -22,11 +22,11 @@ func init() {
 }
 
 func main() {
+	log.Printf("load config from: %v", configPath)
 	cfg, err := config.New(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("config: %+v", cfg)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
@@ -43,7 +43,7 @@ func main() {
 	}()
 
 	<-ctx.Done()
-	log.Printf("server is stoping...")
+	log.Printf("server is stopping...")
 
 	timeOut, timeOutCancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer timeOutCancel()
@@ -51,5 +51,5 @@ func main() {
 	if err := httpServer.Stop(timeOut); err != nil {
 		log.Printf("server stop: %s", err)
 	}
-	log.Printf("server stoped")
+	log.Printf("server is stopped")
 }
