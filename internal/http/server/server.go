@@ -60,17 +60,11 @@ func FillHandle(w http.ResponseWriter, r *http.Request) {
 	url := r.PathValue("img")
 	log.Printf("image url: %v", url)
 
-	imgBuf, respHeader, err := service.PreviewImage(width, height, url, r.Header)
+	imgBuf, err := service.PreviewImage(width, height, url, r.Header)
 	if err != nil {
 		log.Printf("preview image: %v", err)
 		http.Error(w, "preview: "+err.Error(), http.StatusInternalServerError)
 		return
-	}
-
-	for key, values := range *respHeader {
-		for _, value := range values {
-			w.Header().Add(key, value)
-		}
 	}
 
 	_, err = w.Write(imgBuf)

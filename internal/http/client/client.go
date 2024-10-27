@@ -59,7 +59,6 @@ func GetRequest(ctx context.Context, url string, headers http.Header) (*model.Re
 		return nil, fmt.Errorf("read response body: %w", err)
 	}
 	return &model.ResponseImage{
-		Buf:    buf,
-		Header: &resp.Header,
+		Buf: buf,
 	}, nil
 }
