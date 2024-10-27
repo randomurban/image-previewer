@@ -5,24 +5,30 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/randomurban/image-previewer/internal/service"
 )
 
 type Server struct {
 	srv *http.Server
-	mux *http.ServeMux
 }
 
-func NewHTTPServer() *Server {
-	return &Server{srv: &http.Server{}, mux: http.NewServeMux()}
+func NewHTTPServer(addr string) *Server {
+	router := http.NewServeMux()
+	router.HandleFunc("GET /fill/{width}/{height}/{img...}", FillHandle)
+
+	return &Server{
+		srv: &http.Server{
+			Addr:         addr,
+			Handler:      router,
+			ReadTimeout:  10 * time.Second,
+			WriteTimeout: 10 * time.Second,
+		},
+	}
 }
 
-func (s *Server) Start(addr string) error {
-	s.srv = &http.Server{Addr: addr, Handler: s.mux}
-
-	s.mux.HandleFunc("GET /fill/{width}/{height}/{img...}", s.FillHandle)
-
+func (s *Server) Start() error {
 	err := s.srv.ListenAndServe()
 	if err != nil {
 		return err
@@ -34,7 +40,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.srv.Shutdown(ctx)
 }
 
-func (s *Server) FillHandle(w http.ResponseWriter, r *http.Request) {
+func FillHandle(w http.ResponseWriter, r *http.Request) {
 	width, err := strconv.Atoi(r.PathValue("width"))
 	if err != nil {
 		log.Printf("width: %v", err)

@@ -32,10 +32,10 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 	defer cancel()
 
-	httpServer := server.NewHTTPServer()
+	httpServer := server.NewHTTPServer(cfg.HTTPAddr)
 	go func() {
 		log.Printf("server started at: http://%s", cfg.HTTPAddr)
-		err := httpServer.Start(cfg.HTTPAddr)
+		err := httpServer.Start()
 		if !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("server: %s", err)
 		}
