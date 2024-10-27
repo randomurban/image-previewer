@@ -1,9 +1,7 @@
 package server
 
 import (
-	"bytes"
 	"context"
-	"image/jpeg"
 	"log"
 	"net/http"
 	"strconv"
@@ -56,29 +54,28 @@ func (s *Server) FillHandle(w http.ResponseWriter, r *http.Request) {
 	url := r.PathValue("img")
 	log.Printf("image url: %v", url)
 
-	img, respHeader, err := service.PreviewImage(width, height, url, r.Header)
+	imgBuf, respHeader, err := service.PreviewImage(width, height, url, r.Header)
 	if err != nil {
 		log.Printf("preview image: %v", err)
 		http.Error(w, "preview: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	for key, values := range respHeader {
+	for key, values := range *respHeader {
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
 	}
 
-	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, img, nil)
+	_, err = w.Write(imgBuf)
 	if err != nil {
 		log.Printf("encode: %v", err)
 		http.Error(w, "encode error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "image/jpeg")
-	w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
-	_, err = w.Write(buf.Bytes())
+	w.Header().Set("Content-Length", strconv.Itoa(len(imgBuf)))
+	_, err = w.Write(imgBuf)
 	if err != nil {
 		log.Printf("failed write: %s", err)
 		return
