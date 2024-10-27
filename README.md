@@ -114,3 +114,40 @@ http://cut-service.com/fill/300/200/raw.githubusercontent.com/OtusGolang/final_p
 Авторы ТЗ:
 - [Дмитрий Смаль](https://github.com/mialinx)
 - [Антон Телышев](https://github.com/Antonboom)
+
+
+---
+golangci-lint run ./...
+WARN The linter 'ifshort' is deprecated (since v1.48.0) due to: The repository of the linter has been deprecated by the owner.  
+WARN The linter 'deadcode' is deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
+WARN The linter 'varcheck' is deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
+WARN The linter 'exportloopref' is deprecated (since v1.60.2) due to: Since Go1.22 (loopvar) this linter is no longer relevant. Replaced by copyloopvar.
+WARN The linter 'structcheck' is deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
+ERRO [linters_context] deadcode: This linter is fully inactivated: it will not produce any reports.
+ERRO [linters_context] ifshort: This linter is fully inactivated: it will not produce any reports.
+ERRO [linters_context] structcheck: This linter is fully inactivated: it will not produce any reports.
+ERRO [linters_context] varcheck: This linter is fully inactivated: it will not produce any reports. 
+
+
+
+internal/config/config.go:8:2: import 'github.com/joho/godotenv' is not allowed from list 'Main' (depguard)
+"github.com/joho/godotenv"
+^
+internal/http/client/client.go:10:2: import 'github.com/randomurban/image-previewer/internal/model' is not allowed from list 'Main' (depguard)
+"github.com/randomurban/image-previewer/internal/model"
+^
+internal/service/service.go:10:2: import 'github.com/disintegration/imaging' is not allowed from list 'Main' (depguard)
+"github.com/disintegration/imaging"
+^
+internal/service/service.go:11:2: import 'github.com/randomurban/image-previewer/internal/http/client' is not allowed from list 'Main' (depguard)
+"github.com/randomurban/image-previewer/internal/http/client"
+^
+internal/http/server/server.go:9:2: import 'github.com/randomurban/image-previewer/internal/service' is not allowed from list 'Main' (depguard)
+"github.com/randomurban/image-previewer/internal/service"
+^
+cmd/previewer/main.go:13:2: import 'github.com/randomurban/image-previewer/internal/config' is not allowed from list 'Main' (depguard)
+"github.com/randomurban/image-previewer/internal/config"
+^
+cmd/previewer/main.go:14:2: import 'github.com/randomurban/image-previewer/internal/http/server' is not allowed from list 'Main' (depguard)
+"github.com/randomurban/image-previewer/internal/http/server"
+^

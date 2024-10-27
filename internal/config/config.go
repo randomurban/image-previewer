@@ -11,15 +11,15 @@ import (
 const (
 	EnvPrefix = "PREVIEWER_"
 
-	HttpAddr        = "HTTP_ADDR"
-	HttpAddrDefault = "localhost:8080"
+	HTTPAddr        = "HTTP_ADDR"
+	HTTPAddrDefault = "localhost:8080"
 
 	CacheCap        = "CACHE_CAP"
 	CacheCapDefault = 10
 )
 
 type Config struct {
-	HttpAddr string
+	HTTPAddr string
 	CacheCap int
 }
 
@@ -32,7 +32,7 @@ func New(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("load %s: %w", envPath, err)
 	}
 	res := &Config{
-		HttpAddr: env(EnvPrefix+HttpAddr, HttpAddrDefault),
+		HTTPAddr: env(EnvPrefix+HTTPAddr, HTTPAddrDefault),
 		CacheCap: envInt(EnvPrefix+CacheCap, CacheCapDefault),
 	}
 	return res, nil

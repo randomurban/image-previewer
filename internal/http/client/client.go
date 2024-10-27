@@ -21,7 +21,7 @@ func MakeRequest(ctx context.Context, url string, headers http.Header) (*model.R
 		resp, err = GetRequest(ctx, "http://"+url, headers)
 		if err != nil {
 			log.Printf("error on http://%s: %s", url, err)
-			return nil, fmt.Errorf("request error: %s", err)
+			return nil, fmt.Errorf("request error: %w", err)
 		}
 	}
 	return resp, nil
@@ -43,7 +43,7 @@ func GetRequest(ctx context.Context, url string, headers http.Header) (*model.Re
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(resp.Status)
+		return nil, fmt.Errorf("StatusCode: %d", resp.StatusCode)
 	}
 
 	if resp.ContentLength > MaxImageSize {
@@ -55,6 +55,9 @@ func GetRequest(ctx context.Context, url string, headers http.Header) (*model.Re
 	}
 
 	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response body: %w", err)
+	}
 	return &model.ResponseImage{
 		Buf:    buf,
 		Header: &resp.Header,

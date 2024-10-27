@@ -34,8 +34,8 @@ func main() {
 
 	httpServer := server.NewHTTPServer()
 	go func() {
-		log.Printf("server started at: http://%s", cfg.HttpAddr)
-		err := httpServer.Start(cfg.HttpAddr)
+		log.Printf("server started at: http://%s", cfg.HTTPAddr)
+		err := httpServer.Start(cfg.HTTPAddr)
 		if !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("server: %s", err)
 		}

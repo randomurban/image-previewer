@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	HttpClientTimeout = 5 * time.Second
+	HTTPClientTimeout = 5 * time.Second
 )
 
 func PreviewImage(width int, height int, url string, header http.Header) ([]byte, *http.Header, error) {
-	clientCtx, clientCancel := context.WithTimeout(context.Background(), HttpClientTimeout)
+	clientCtx, clientCancel := context.WithTimeout(context.Background(), HTTPClientTimeout)
 	defer clientCancel()
 
 	resp, err := client.MakeRequest(clientCtx, url, header)

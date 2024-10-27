@@ -7,7 +7,7 @@ import (
 )
 
 type Preview struct {
-	OriginalUrl string
+	OriginalURL string
 	Buffer      io.Reader
 	Header      http.Header
 	Image       image.Image
