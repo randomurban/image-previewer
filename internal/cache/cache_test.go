@@ -1,7 +1,8 @@
 package cache
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"strconv"
 	"sync"
 	"testing"
@@ -48,7 +49,9 @@ func TestCache(t *testing.T) {
 		require.False(t, ok)
 		require.Nil(t, val)
 	})
+}
 
+func TestCache2(t *testing.T) {
 	t.Run("purge logic", func(t *testing.T) {
 		c := NewCache(3)
 
@@ -179,7 +182,9 @@ func TestCacheMultithreading(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 1_000_000; i++ {
-			c.Get(Key(strconv.Itoa(rand.Intn(1_000_000))))
+			number, err := rand.Int(rand.Reader, big.NewInt(1_000_000))
+			require.NoError(t, err)
+			c.Get(Key(number.String()))
 		}
 	}()
 
