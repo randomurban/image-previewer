@@ -67,6 +67,9 @@ func (s *Preview) PreviewImage(width int, height int, url string, header http.He
 	}
 
 	err = s.store.Upload(key, buf.Bytes())
+	if err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }

@@ -97,5 +97,5 @@ func envInt64(key string, defaultVal int64) int64 {
 	if err != nil {
 		return defaultVal
 	}
-	return int64(res)
+	return res
 }
