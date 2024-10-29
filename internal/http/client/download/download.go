@@ -46,7 +46,12 @@ func (c *Client) GetRequest(ctx context.Context, url string, headers http.Header
 	if err != nil {
 		return nil, fmt.Errorf("do request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("error closing body: %s", err)
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("StatusCode: %d", resp.StatusCode)
