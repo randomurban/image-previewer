@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/randomurban/image-previewer/internal/config"
+	"github.com/randomurban/image-previewer/internal/http/client/download"
 	"github.com/randomurban/image-previewer/internal/http/server/handle/fill"
 	"github.com/randomurban/image-previewer/internal/service/preview"
 	"github.com/randomurban/image-previewer/internal/storage/filestorage"
@@ -34,13 +35,13 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 	defer cancel()
 
-	cacheStore := filestorage.NewStorage("./cache_store", 2) // todo cfg.capacity
+	cacheStore := filestorage.NewStorage(cfg.CacheDir, cfg.CacheCap)
 	err = cacheStore.Init()
 	if err != nil {
 		log.Fatal("cache init: ", err)
 	}
-
-	previewer := preview.NewPreviewService(cacheStore)
+	downloader := download.NewClient(cfg.MaxImageSize)
+	previewer := preview.NewPreviewService(cacheStore, downloader, cfg.HTTPClientTimeout)
 
 	fillHandler := fill.NewHandle(previewer)
 
@@ -50,8 +51,8 @@ func main() {
 	httpServer := &http.Server{
 		Addr:         cfg.HTTPAddr,
 		Handler:      router,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  cfg.HTTPServerReadTimeout,
+		WriteTimeout: cfg.HTTPServerWriteTimeout,
 	}
 
 	go func() {

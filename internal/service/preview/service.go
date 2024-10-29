@@ -17,24 +17,24 @@ import (
 	"github.com/randomurban/image-previewer/internal/storage"
 )
 
-const (
-	HTTPClientTimeout = 5 * time.Second
-)
-
 var _ service.Previewer = (*Preview)(nil)
 
 type Preview struct {
-	store storage.Cacher
+	store         storage.Cacher
+	client        client.Downloader
+	clientTimeout time.Duration
 }
 
-func NewPreviewService(store storage.Cacher) service.Previewer {
+func NewPreviewService(store storage.Cacher, client client.Downloader, clientTimeout time.Duration) service.Previewer {
 	return &Preview{
-		store: store,
+		store:         store,
+		client:        client,
+		clientTimeout: clientTimeout,
 	}
 }
 
 func (s *Preview) PreviewImage(width int, height int, url string, header http.Header) ([]byte, error) {
-	clientCtx, clientCancel := context.WithTimeout(context.Background(), HTTPClientTimeout)
+	clientCtx, clientCancel := context.WithTimeout(context.Background(), s.clientTimeout)
 	defer clientCancel()
 
 	name := sha256.Sum256([]byte(fmt.Sprintf("%v_%v_%v", width, height, url)))
@@ -48,7 +48,7 @@ func (s *Preview) PreviewImage(width int, height int, url string, header http.He
 		return fromCache, nil
 	}
 
-	resp, err := client.MakeRequest(clientCtx, url, header)
+	resp, err := s.client.MakeRequest(clientCtx, url, header)
 	if err != nil {
 		return nil, err
 	}

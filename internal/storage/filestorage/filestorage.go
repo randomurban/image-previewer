@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/randomurban/image-previewer/internal/config"
 	"github.com/randomurban/image-previewer/internal/storage"
 	"github.com/randomurban/image-previewer/internal/storage/cache"
 )
@@ -18,6 +19,7 @@ type FileCache struct {
 	cache    cache.Cache
 	capacity int
 	path     string
+	cfg      *config.Config
 }
 
 func NewStorage(path string, capacity int) storage.Cacher {
