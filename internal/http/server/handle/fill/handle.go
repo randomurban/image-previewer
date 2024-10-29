@@ -1,46 +1,25 @@
-package server
+package fill
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
+	"github.com/randomurban/image-previewer/internal/http/server/handle"
 	"github.com/randomurban/image-previewer/internal/service"
 )
 
-type Server struct {
-	srv *http.Server
+type Handle struct {
+	previewer service.Previewer
 }
 
-func NewHTTPServer(addr string) *Server {
-	router := http.NewServeMux()
-	router.HandleFunc("GET /fill/{width}/{height}/{img...}", FillHandle)
-
-	return &Server{
-		srv: &http.Server{
-			Addr:         addr,
-			Handler:      router,
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		},
+func NewHandle(previewer service.Previewer) handle.Handler {
+	return &Handle{
+		previewer: previewer,
 	}
 }
 
-func (s *Server) Start() error {
-	err := s.srv.ListenAndServe()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *Server) Stop(ctx context.Context) error {
-	return s.srv.Shutdown(ctx)
-}
-
-func FillHandle(w http.ResponseWriter, r *http.Request) {
+func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
 	width, err := strconv.Atoi(r.PathValue("width"))
 	if err != nil {
 		log.Printf("width: %v", err)
@@ -60,7 +39,7 @@ func FillHandle(w http.ResponseWriter, r *http.Request) {
 	url := r.PathValue("img")
 	log.Printf("image url: %v", url)
 
-	imgBuf, err := service.PreviewImage(width, height, url, r.Header)
+	imgBuf, err := h.previewer.PreviewImage(width, height, url, r.Header)
 	if err != nil {
 		log.Printf("preview image: %v", err)
 		http.Error(w, "preview: "+err.Error(), http.StatusInternalServerError)
