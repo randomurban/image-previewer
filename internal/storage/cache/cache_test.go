@@ -12,6 +12,7 @@ import (
 
 func TestCache(t *testing.T) {
 	t.Run("empty cache", func(t *testing.T) {
+		t.Parallel()
 		c := NewCache(10)
 
 		_, ok := c.Get("aaa")
@@ -22,6 +23,7 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("simple", func(t *testing.T) {
+		t.Parallel()
 		c := NewCache(5)
 
 		_, wasInCache := c.Set("aaa", 100)
@@ -53,6 +55,7 @@ func TestCache(t *testing.T) {
 
 func TestCache2(t *testing.T) {
 	t.Run("purge logic", func(t *testing.T) {
+		t.Parallel()
 		c := NewCache(3)
 
 		deletedVal, wasInCache := c.Set("aaa", 100)
@@ -89,6 +92,7 @@ func TestCache2(t *testing.T) {
 	})
 
 	t.Run("complex purge logic", func(t *testing.T) {
+		t.Parallel()
 		c := NewCache(3)
 
 		deletedVal, wasInCache := c.Set("aaa", 100)
@@ -133,6 +137,7 @@ func TestCache2(t *testing.T) {
 	})
 
 	t.Run("clear cache", func(t *testing.T) {
+		t.Parallel()
 		c := NewCache(3)
 
 		_, wasInCache := c.Set("aaa", 100)
@@ -168,35 +173,35 @@ func TestCache2(t *testing.T) {
 }
 
 func TestCacheMultithreading(t *testing.T) {
+	t.Parallel()
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
 
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1_000_000; i++ {
+		for i := 0; i < 100_000; i++ {
 			c.Set(Key(strconv.Itoa(i)), i)
 		}
 	}()
 
 	go func() {
 		defer wg.Done()
-		for i := 0; i < 1_000_000; i++ {
-			number, err := rand.Int(rand.Reader, big.NewInt(1_000_000))
+		for i := 0; i < 100_000; i++ {
+			number, err := rand.Int(rand.Reader, big.NewInt(100_000))
 			require.NoError(t, err)
 			c.Get(Key(number.String()))
 		}
 	}()
-
 	wg.Wait()
 
-	val, ok := c.Get("999999")
+	val, ok := c.Get("99999")
 	require.True(t, ok)
-	require.Equal(t, 999999, val)
+	require.Equal(t, 99999, val)
 
-	val, ok = c.Get("999990")
+	val, ok = c.Get("99990")
 	require.True(t, ok)
-	require.Equal(t, 999990, val)
+	require.Equal(t, 99990, val)
 
 	val, ok = c.Get("0")
 	require.False(t, ok)

@@ -78,8 +78,8 @@ http://cut-service.com/fill/300/200/raw.githubusercontent.com/OtusGolang/final_p
 #### Зачёт от 10 баллов
 
 ### Обязательные требования для каждого проекта
--[ ] Наличие юнит-тестов на ключевые алгоритмы (core-логику) сервиса.
--[ ] Наличие валидных Dockerfile и Makefile/Taskfile для сервиса.
+-[x] Наличие юнит-тестов на ключевые алгоритмы (core-логику) сервиса.
+-[x] Наличие валидных Dockerfile и Makefile/Taskfile для сервиса.
 -[ ] Ветка master успешно проходит пайплайн в CI-CD системе
   (на ваш вкус, GitHub Actions, Circle CI, Travis CI, Jenkins, GitLab CI и пр.).
 -[ ] **Пайплайн должен в себе содержать**:
