@@ -42,7 +42,7 @@ func (c *Client) GetRequest(ctx context.Context, url string, headers http.Header
 	req.Header = headers
 
 	client := http.Client{}
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) //nolint:bodyclose
 	if err != nil {
 		return nil, fmt.Errorf("do request: %w", err)
 	}

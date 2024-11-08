@@ -11,6 +11,7 @@ import (
 )
 
 func TestCache(t *testing.T) {
+	t.Parallel()
 	t.Run("empty cache", func(t *testing.T) {
 		t.Parallel()
 		c := NewCache(10)
@@ -54,8 +55,8 @@ func TestCache(t *testing.T) {
 }
 
 func TestCache2(t *testing.T) {
+	t.Parallel()
 	t.Run("purge logic", func(t *testing.T) {
-		t.Parallel()
 		c := NewCache(3)
 
 		deletedVal, wasInCache := c.Set("aaa", 100)

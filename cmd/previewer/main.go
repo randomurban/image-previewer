@@ -33,13 +33,14 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
-	defer cancel()
 
 	cacheStore := filestorage.NewStorage(cfg.CacheDir, cfg.CacheCap)
 	err = cacheStore.Init()
 	if err != nil {
 		log.Fatal("cache init: ", err)
 	}
+	defer cancel()
+
 	downloader := download.NewClient(cfg.MaxImageSize)
 	previewer := preview.NewPreviewService(cacheStore, downloader, cfg.HTTPClientTimeout)
 

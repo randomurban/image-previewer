@@ -31,7 +31,7 @@ func NewStorage(path string, capacity int) storage.Cacher {
 func (s *FileCache) Init() error {
 	_, err := os.Stat(s.path)
 	if os.IsNotExist(err) {
-		err := os.MkdirAll(s.path, 0755)
+		err := os.MkdirAll(s.path, 0o755)
 		if err != nil {
 			return fmt.Errorf("creating storage directory: %w", err)
 		}
