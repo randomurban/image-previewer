@@ -20,6 +20,7 @@ func NewHandle(previewer service.Previewer) handle.Handler {
 }
 
 func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
+	log.Printf("url: %s", r.URL)
 	width, err := strconv.Atoi(r.PathValue("width"))
 	if err != nil {
 		log.Printf("width: %v", err)
