@@ -8,6 +8,7 @@ services:
       - "8080:8080"
 
   nginx:
+    container_name: nginx
     image: nginx:alpine
     restart: unless-stopped
     ports:
@@ -17,6 +18,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
 
   integration-test:
+    container_name: integration-test
     depends_on:
       - nginx
       - image-previewer

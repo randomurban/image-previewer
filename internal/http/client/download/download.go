@@ -21,12 +21,14 @@ func NewClient(maxImageSize int64) *Client {
 }
 
 func (c *Client) MakeRequest(ctx context.Context, url string, headers http.Header) (*model.ResponseImage, error) {
-	resp, err := c.GetRequest(ctx, "https://"+url, headers)
+	log.Printf("trying http://%s", url)
+	resp, err := c.GetRequest(ctx, "http://"+url, headers)
 	if err != nil {
-		log.Printf("error on https://%s: %s", url, err)
-		resp, err = c.GetRequest(ctx, "http://"+url, headers)
+		log.Printf("request error: %s", err)
+		log.Printf("trying https://%s", url)
+		resp, err = c.GetRequest(ctx, "https://"+url, headers)
 		if err != nil {
-			log.Printf("error on http://%s: %s", url, err)
+			log.Printf("request error: %s", err)
 			return nil, fmt.Errorf("request error: %w", err)
 		}
 	}
@@ -42,23 +44,22 @@ func (c *Client) GetRequest(ctx context.Context, url string, headers http.Header
 	req.Header = headers
 
 	client := http.Client{}
-	resp, err := client.Do(req) //nolint:bodyclose
+	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("do request: %w", err)
+		return nil, fmt.Errorf("do request: %w: %w", model.ErrRequest, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Printf("error closing body: %s", err)
-		}
-	}(resp.Body)
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, model.ErrNotFound
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("StatusCode: %d", resp.StatusCode)
 	}
 
 	if resp.ContentLength > c.MaxImageSize {
-		return nil, fmt.Errorf("file too big")
+		return nil, fmt.Errorf("file too big: %w", model.ErrTooLarge)
 	}
 
 	if resp.Header.Get("Content-Type") != "image/jpeg" {

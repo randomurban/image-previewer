@@ -40,24 +40,26 @@ func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
 	url := r.PathValue("img")
 	log.Printf("image url: %v", url)
 
-	imgBuf, err := h.previewer.PreviewImage(width, height, url, r.Header)
+	imgPreview, err := h.previewer.PreviewImage(width, height, url, r.Header)
 	if err != nil {
 		log.Printf("preview image: %v", err)
 		http.Error(w, "preview: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if imgPreview.IsCacheHit {
+		log.Printf("image preview cache HIT")
+		w.Header().Set("X-Cache", "HIT")
+	} else {
+		log.Printf("image preview cache MISS")
+		w.Header().Set("X-Cache", "MISS")
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Content-Length", strconv.Itoa(len(imgPreview.Buf)))
 
-	_, err = w.Write(imgBuf)
+	_, err = w.Write(imgPreview.Buf)
 	if err != nil {
 		log.Printf("encode: %v", err)
 		http.Error(w, "encode error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "image/jpeg")
-	w.Header().Set("Content-Length", strconv.Itoa(len(imgBuf)))
-	_, err = w.Write(imgBuf)
-	if err != nil {
-		log.Printf("failed write: %s", err)
 		return
 	}
 }

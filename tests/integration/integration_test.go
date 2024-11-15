@@ -15,6 +15,7 @@ import (
 )
 
 func TestGetImages(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		srv           string
 		width, height int
@@ -32,7 +33,7 @@ func TestGetImages(t *testing.T) {
 		want results
 	}{
 		{
-			name: "load 200 300 from nginx",
+			name: "load 200 300 from nginx MISS",
 			args: args{
 				srv:    "image-previewer:8080",
 				width:  200,
@@ -41,13 +42,28 @@ func TestGetImages(t *testing.T) {
 			},
 			want: results{
 				contentType: "image/jpeg",
-				size:        18814,
+				size:        9407,
 				format:      "jpeg",
 				statusCode:  200,
 			},
 		},
 		{
-			name: "load 300 200 from nginx",
+			name: "load 200 300 from nginx HIT",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  200,
+				height: 300,
+				imgURL: "nginx/_gopher_original_1024x504.jpg",
+			},
+			want: results{
+				contentType: "image/jpeg",
+				size:        9407,
+				format:      "jpeg",
+				statusCode:  200,
+			},
+		},
+		{
+			name: "load 300 200 from nginx MISS",
 			args: args{
 				srv:    "image-previewer:8080",
 				width:  300,
@@ -56,13 +72,13 @@ func TestGetImages(t *testing.T) {
 			},
 			want: results{
 				contentType: "image/jpeg",
-				size:        19380,
+				size:        9690,
 				format:      "jpeg",
 				statusCode:  200,
 			},
 		},
 		{
-			name: "load 1300 200 from nginx",
+			name: "load 1300 200 from nginx MISS",
 			args: args{
 				srv:    "image-previewer:8080",
 				width:  1300,
@@ -71,13 +87,13 @@ func TestGetImages(t *testing.T) {
 			},
 			want: results{
 				contentType: "image/jpeg",
-				size:        44674,
+				size:        22337,
 				format:      "jpeg",
 				statusCode:  200,
 			},
 		},
 		{
-			name: "load 300 1200 from nginx",
+			name: "load 300 1200 from nginx MISS",
 			args: args{
 				srv:    "image-previewer:8080",
 				width:  300,
@@ -86,7 +102,22 @@ func TestGetImages(t *testing.T) {
 			},
 			want: results{
 				contentType: "image/jpeg",
-				size:        68440,
+				size:        34220,
+				format:      "jpeg",
+				statusCode:  200,
+			},
+		},
+		{
+			name: "load 300 1200 from nginx HIT",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  300,
+				height: 1200,
+				imgURL: "nginx/_gopher_original_1024x504.jpg",
+			},
+			want: results{
+				contentType: "image/jpeg",
+				size:        34220,
 				format:      "jpeg",
 				statusCode:  200,
 			},

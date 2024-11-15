@@ -1,5 +1,6 @@
 package model
 
 type ResponseImage struct {
-	Buf []byte
+	Buf        []byte
+	IsCacheHit bool
 }
