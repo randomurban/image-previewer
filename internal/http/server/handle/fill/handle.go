@@ -26,18 +26,26 @@ func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
 	width, err := strconv.Atoi(r.PathValue("width"))
 	if err != nil {
 		log.Printf("width: %v", err)
-		http.Error(w, "Bad request: wrong width in url", http.StatusBadRequest)
+		http.Error(w, "Bad request: illegal width", http.StatusBadRequest)
 		return
 	}
 	log.Printf("width: %v", width)
+	if width <= 0 {
+		http.Error(w, "Bad request: illegal width", http.StatusBadRequest)
+		return
+	}
 
 	height, err := strconv.Atoi(r.PathValue("height"))
 	if err != nil {
 		log.Printf("height: %v", err)
-		http.Error(w, "Bad request: wrong height in url", http.StatusBadRequest)
+		http.Error(w, "Bad request: illegal height", http.StatusBadRequest)
 		return
 	}
 	log.Printf("height: %v", height)
+	if height <= 0 {
+		http.Error(w, "Bad request: illegal height", http.StatusBadRequest)
+		return
+	}
 
 	url := r.PathValue("img")
 	log.Printf("image url: %v", url)
@@ -49,13 +57,13 @@ func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, model.ErrNotFound):
 			http.Error(w, "Not found", http.StatusNotFound)
 		case errors.Is(err, model.ErrTooLarge):
-			http.Error(w, "Too big", http.StatusRequestEntityTooLarge)
-		case errors.Is(err, model.ErrRequest):
-			http.Error(w, "Bad request", http.StatusBadRequest)
+			http.Error(w, "Too Large", http.StatusRequestEntityTooLarge)
 		case errors.Is(err, model.ErrBadGateway):
-			http.Error(w, "Bad request", http.StatusBadGateway)
+			http.Error(w, "Bad Gateway", http.StatusBadGateway)
 		case errors.Is(err, model.ErrTimeout):
-			http.Error(w, "Bad request", http.StatusRequestTimeout)
+			http.Error(w, "Request Timeout", http.StatusRequestTimeout)
+		case errors.Is(err, model.ErrUnsupportedMediaType):
+			http.Error(w, "Unsupported Media Type", http.StatusUnsupportedMediaType)
 		default:
 			http.Error(w, "preview: "+err.Error(), http.StatusInternalServerError)
 		}

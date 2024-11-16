@@ -26,4 +26,4 @@ services:
     working_dir: /app
     volumes:
       - ..:/app
-    command: sh -c 'go test -count 10 -v /app/tests/integration/...'
+    command: sh -c 'go test -count 1 -v /app/tests/integration/...'

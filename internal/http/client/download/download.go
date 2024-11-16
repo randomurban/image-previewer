@@ -57,7 +57,7 @@ func (c *Client) GetRequest(ctx context.Context, url string, headers http.Header
 		if errors.As(err, &netErr) && netErr.Timeout() {
 			return nil, fmt.Errorf("request timeout: %w", model.ErrTimeout)
 		}
-		return nil, fmt.Errorf("do request: %w: %w", model.ErrRequest, err)
+		return nil, fmt.Errorf("do request: %w: %w", model.ErrBadGateway, err)
 	}
 	defer resp.Body.Close()
 
@@ -74,7 +74,7 @@ func (c *Client) GetRequest(ctx context.Context, url string, headers http.Header
 	}
 
 	if resp.Header.Get("Content-Type") != "image/jpeg" {
-		return nil, fmt.Errorf("file is not image/jpeg")
+		return nil, fmt.Errorf("file is not image/jpeg: %w", model.ErrUnsupportedMediaType)
 	}
 
 	buf, err := io.ReadAll(resp.Body)

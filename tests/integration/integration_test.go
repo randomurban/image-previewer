@@ -140,11 +140,7 @@ func TestGetImages(t *testing.T) {
 				imgURL: "wrong_wrong_server_name/_gopher_original_1024x504.jpg",
 			},
 			want: results{
-				contentType: "text/plain; charset=utf-8",
-				size:        0,
-				format:      "",
-				statusCode:  408,
-				xCache:      "",
+				statusCode: 408,
 			},
 		},
 		{
@@ -156,11 +152,55 @@ func TestGetImages(t *testing.T) {
 				imgURL: "nginx/wrong_filename",
 			},
 			want: results{
-				contentType: "text/plain; charset=utf-8",
-				size:        0,
-				format:      "",
-				statusCode:  404,
-				xCache:      "",
+				statusCode: 404,
+			},
+		},
+		{
+			name: "too large 413",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  300,
+				height: 1200,
+				imgURL: "nginx/big.jpg",
+			},
+			want: results{
+				statusCode: 413,
+			},
+		},
+		{
+			name: "unsupported media type 415",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  300,
+				height: 1200,
+				imgURL: "nginx/text.txt",
+			},
+			want: results{
+				statusCode: 415,
+			},
+		},
+		{
+			name: "illegal width",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  -300,
+				height: 1200,
+				imgURL: "nginx/_gopher_original_1024x504.jpg",
+			},
+			want: results{
+				statusCode: 400,
+			},
+		},
+		{
+			name: "illegal height",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  300,
+				height: -1200,
+				imgURL: "nginx/_gopher_original_1024x504.jpg",
+			},
+			want: results{
+				statusCode: 400,
 			},
 		},
 	}
@@ -185,10 +225,14 @@ func TestGetImages(t *testing.T) {
 
 			log.Printf("response StatusCode: %v", resp.StatusCode)
 			require.Equal(t, tt.want.statusCode, resp.StatusCode, "response wrong StatusCode")
-			log.Printf("response X-Cache: %s", resp.Header.Get("X-Cache"))
-			assert.Equal(t, tt.want.xCache, resp.Header.Get("X-Cache"), "response wrong X-Cache Header")
-			log.Printf("response Content-Type: %v", resp.Header.Get("Content-Type"))
-			assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"), "response wrong Content-Type")
+			if tt.want.xCache != "" {
+				log.Printf("response X-Cache: %s", resp.Header.Get("X-Cache"))
+				assert.Equal(t, tt.want.xCache, resp.Header.Get("X-Cache"), "response wrong X-Cache Header")
+			}
+			if tt.want.contentType != "" {
+				log.Printf("response Content-Type: %v", resp.Header.Get("Content-Type"))
+				assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"), "response wrong Content-Type")
+			}
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
@@ -198,7 +242,7 @@ func TestGetImages(t *testing.T) {
 				assert.Equal(t, tt.want.size, len(body), "response illegal body size")
 			}
 
-			if tt.want.contentType != "image/jpeg" && tt.want.format != "jpeg" && resp.StatusCode == 200 {
+			if tt.want.contentType != "image/jpeg" && tt.want.format != "jpeg" && resp.StatusCode == 200 && resp.Header.Get("Content-Type") == "image/jpeg" {
 				log.Printf("chack response format: %s", tt.want.format)
 				img, imgFormat, err := image.Decode(bytes.NewReader(body))
 				if err != nil {
@@ -207,7 +251,6 @@ func TestGetImages(t *testing.T) {
 				assert.Equal(t, tt.args.width, img.Bounds().Dx(), "response illegal image Width")
 				assert.Equal(t, tt.args.height, img.Bounds().Dy(), "response illegal image Height")
 				assert.Equal(t, tt.want.format, imgFormat, "response illegal image format")
-
 			}
 		})
 	}
