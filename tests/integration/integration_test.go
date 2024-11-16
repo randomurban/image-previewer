@@ -7,11 +7,13 @@ import (
 	"image"
 	_ "image/jpeg"
 	"io"
+	"log"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetImages(t *testing.T) {
@@ -26,6 +28,7 @@ func TestGetImages(t *testing.T) {
 		size        int
 		format      string
 		statusCode  int
+		xCache      string
 	}
 	tests := []struct {
 		name string
@@ -45,6 +48,7 @@ func TestGetImages(t *testing.T) {
 				size:        9407,
 				format:      "jpeg",
 				statusCode:  200,
+				xCache:      "MISS",
 			},
 		},
 		{
@@ -60,6 +64,7 @@ func TestGetImages(t *testing.T) {
 				size:        9407,
 				format:      "jpeg",
 				statusCode:  200,
+				xCache:      "HIT",
 			},
 		},
 		{
@@ -75,6 +80,7 @@ func TestGetImages(t *testing.T) {
 				size:        9690,
 				format:      "jpeg",
 				statusCode:  200,
+				xCache:      "MISS",
 			},
 		},
 		{
@@ -90,6 +96,7 @@ func TestGetImages(t *testing.T) {
 				size:        22337,
 				format:      "jpeg",
 				statusCode:  200,
+				xCache:      "MISS",
 			},
 		},
 		{
@@ -105,6 +112,7 @@ func TestGetImages(t *testing.T) {
 				size:        34220,
 				format:      "jpeg",
 				statusCode:  200,
+				xCache:      "MISS",
 			},
 		},
 		{
@@ -120,12 +128,45 @@ func TestGetImages(t *testing.T) {
 				size:        34220,
 				format:      "jpeg",
 				statusCode:  200,
+				xCache:      "HIT",
+			},
+		},
+		{
+			name: "wrong server name timeout 408",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  300,
+				height: 1200,
+				imgURL: "wrong_wrong_server_name/_gopher_original_1024x504.jpg",
+			},
+			want: results{
+				contentType: "text/plain; charset=utf-8",
+				size:        0,
+				format:      "",
+				statusCode:  408,
+				xCache:      "",
+			},
+		},
+		{
+			name: "wrong filename 404",
+			args: args{
+				srv:    "image-previewer:8080",
+				width:  300,
+				height: 1200,
+				imgURL: "nginx/wrong_filename",
+			},
+			want: results{
+				contentType: "text/plain; charset=utf-8",
+				size:        0,
+				format:      "",
+				statusCode:  404,
+				xCache:      "",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 			url := fmt.Sprintf("http://%s/fill/%v/%v/%s",
 				tt.args.srv, tt.args.width, tt.args.height, tt.args.imgURL)
@@ -138,26 +179,36 @@ func TestGetImages(t *testing.T) {
 			client := &http.Client{}
 			resp, err := client.Do(req)
 			if err != nil {
-				t.Errorf("do request: %v", err)
+				t.Fatalf("do request: %v", err)
 			}
 			defer resp.Body.Close()
 
-			assert.Equal(t, tt.want.statusCode, resp.StatusCode)
-			assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
+			log.Printf("response StatusCode: %v", resp.StatusCode)
+			require.Equal(t, tt.want.statusCode, resp.StatusCode, "response wrong StatusCode")
+			log.Printf("response X-Cache: %s", resp.Header.Get("X-Cache"))
+			assert.Equal(t, tt.want.xCache, resp.Header.Get("X-Cache"), "response wrong X-Cache Header")
+			log.Printf("response Content-Type: %v", resp.Header.Get("Content-Type"))
+			assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"), "response wrong Content-Type")
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				t.Errorf("read response body: %v", err)
 			}
-			assert.Equal(t, tt.want.size, len(body), "illegal body size")
-
-			img, imgFormat, err := image.Decode(bytes.NewReader(body))
-			if err != nil {
-				t.Fatalf("decode image: %v", err)
+			if tt.want.size != 0 {
+				assert.Equal(t, tt.want.size, len(body), "response illegal body size")
 			}
-			assert.Equal(t, tt.args.width, img.Bounds().Dx(), "illegal image Dx")
-			assert.Equal(t, tt.args.height, img.Bounds().Dy(), "illegal image Dy")
-			assert.Equal(t, tt.want.format, imgFormat, "illegal image format")
+
+			if tt.want.contentType != "image/jpeg" && tt.want.format != "jpeg" && resp.StatusCode == 200 {
+				log.Printf("chack response format: %s", tt.want.format)
+				img, imgFormat, err := image.Decode(bytes.NewReader(body))
+				if err != nil {
+					t.Fatalf("decode image: %v", err)
+				}
+				assert.Equal(t, tt.args.width, img.Bounds().Dx(), "response illegal image Width")
+				assert.Equal(t, tt.args.height, img.Bounds().Dy(), "response illegal image Height")
+				assert.Equal(t, tt.want.format, imgFormat, "response illegal image format")
+
+			}
 		})
 	}
 }

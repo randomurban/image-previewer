@@ -41,7 +41,7 @@ func main() {
 	}
 	defer cancel()
 
-	downloader := download.NewClient(cfg.MaxImageSize)
+	downloader := download.NewClient(cfg.MaxImageSize, cfg.HTTPClientTimeout)
 	previewer := preview.NewPreviewService(cacheStore, downloader, cfg.HTTPClientTimeout)
 
 	fillHandler := fill.NewHandle(previewer)

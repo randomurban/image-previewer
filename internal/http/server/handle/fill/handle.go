@@ -1,11 +1,13 @@
 package fill
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/randomurban/image-previewer/internal/http/server/handle"
+	"github.com/randomurban/image-previewer/internal/model"
 	"github.com/randomurban/image-previewer/internal/service"
 )
 
@@ -43,7 +45,20 @@ func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
 	imgPreview, err := h.previewer.PreviewImage(width, height, url, r.Header)
 	if err != nil {
 		log.Printf("preview image: %v", err)
-		http.Error(w, "preview: "+err.Error(), http.StatusInternalServerError)
+		switch {
+		case errors.Is(err, model.ErrNotFound):
+			http.Error(w, "Not found", http.StatusNotFound)
+		case errors.Is(err, model.ErrTooLarge):
+			http.Error(w, "Too big", http.StatusRequestEntityTooLarge)
+		case errors.Is(err, model.ErrRequest):
+			http.Error(w, "Bad request", http.StatusBadRequest)
+		case errors.Is(err, model.ErrBadGateway):
+			http.Error(w, "Bad request", http.StatusBadGateway)
+		case errors.Is(err, model.ErrTimeout):
+			http.Error(w, "Bad request", http.StatusRequestTimeout)
+		default:
+			http.Error(w, "preview: "+err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 	if imgPreview.IsCacheHit {

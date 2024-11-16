@@ -35,8 +35,9 @@ func NewPreviewService(store storage.Cacher, client client.Downloader, clientTim
 }
 
 func (s *Preview) PreviewImage(width int, height int, url string, header http.Header) (*model.ResponseImage, error) {
-	clientCtx, clientCancel := context.WithTimeout(context.Background(), s.clientTimeout)
-	defer clientCancel()
+	//clientCtx, clientCancel := context.WithTimeout(context.Background(), 5*s.clientTimeout)
+	//defer clientCancel()
+	clientCtx := context.Background()
 
 	isCacheHit := false
 	name := sha256.Sum256([]byte(fmt.Sprintf("%v_%v_%v", width, height, url)))
