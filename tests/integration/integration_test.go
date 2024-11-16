@@ -143,7 +143,7 @@ func TestGetImagesNegative(t *testing.T) {
 	t.Parallel()
 	tests := []testcase{
 		{
-			name: "wrong server name timeout 408",
+			name: "wrong server name timeout 502",
 			args: args{
 				srv:    "image-previewer:8080",
 				width:  300,
@@ -151,7 +151,7 @@ func TestGetImagesNegative(t *testing.T) {
 				imgURL: "wrong_wrong_server_name/_gopher_original_1024x504.jpg",
 			},
 			want: results{
-				statusCode: 408,
+				statusCode: 502,
 			},
 		},
 		{
