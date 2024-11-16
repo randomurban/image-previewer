@@ -27,26 +27,28 @@ jobs:
     name: tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+      - uses: actions/checkout@v4
       - name: Test with the Go CLI
         run: go test -race -count 100 ./internal/...
 
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Golang
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
 
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - run: make build
 
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Build binary
-        run: make build
+  integration_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: make integration-test
