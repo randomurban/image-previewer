@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/randomurban/image-previewer/internal/http/server/handle"
 	"github.com/randomurban/image-previewer/internal/model"
@@ -47,7 +48,13 @@ func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := r.PathValue("img")
+	//url := r.PathValue("img")
+	urlParam := strings.SplitN(r.URL.String(), "/", 5)
+	if len(urlParam) != 5 {
+		http.Error(w, "Bad request: illegal url", http.StatusBadRequest)
+		return
+	}
+	url := urlParam[4]
 	log.Printf("image url: %v", url)
 
 	imgPreview, err := h.previewer.PreviewImage(width, height, url, r.Header)

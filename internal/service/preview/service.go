@@ -9,6 +9,7 @@ import (
 	"image/jpeg"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -37,7 +38,9 @@ func NewPreviewService(store storage.Cacher, client client.Downloader, clientTim
 func (s *Preview) PreviewImage(width int, height int, url string, header http.Header) (*model.ResponseImage, error) {
 	clientCtx := context.Background()
 	isCacheHit := false
-	name := sha256.Sum256([]byte(fmt.Sprintf("%v_%v_%v", width, height, url)))
+	cacheURL := strings.Split(url, "?")[0]
+	log.Printf("cacheURL: %s", cacheURL)
+	name := sha256.Sum256([]byte(fmt.Sprintf("%v_%v_%v", width, height, cacheURL)))
 	key := base32.StdEncoding.EncodeToString(name[:])
 	fromCache, err := s.store.Download(key)
 	if err != nil {
