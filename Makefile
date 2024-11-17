@@ -4,11 +4,11 @@ BIN=./bin/previewer
 
 .PHONY: build
 build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/previewer
+	docker compose -f ./docker/compose.yaml build
 
 .PHONY: run
 run: build
-	$(BIN) -config ./.env
+	docker compose -f ./docker/compose.yaml up
 
 .PHONY: lint
 lint:

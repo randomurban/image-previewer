@@ -2,3 +2,4 @@ cache_store
 bin
 .github
 .idea
+docker
