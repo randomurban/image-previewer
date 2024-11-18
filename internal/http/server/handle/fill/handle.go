@@ -48,7 +48,6 @@ func (h Handle) FillHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//url := r.PathValue("img")
 	urlParam := strings.SplitN(r.URL.String(), "/", 5)
 	if len(urlParam) != 5 {
 		http.Error(w, "Bad request: illegal url", http.StatusBadRequest)
